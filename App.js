@@ -32,8 +32,8 @@ export default function App() {
   };
 
   const handleDeleteTask = async (index) => {
-    const updatedTasks = [...tasks]; // Create a copy of the tasks array
-    updatedTasks.splice(index, 1); // Remove the task at the specified index
+    const updatedTasks = [...tasks]; 
+    updatedTasks.splice(index, 1); 
     setTasks(updatedTasks);
     await deleteTask(index);
   }
