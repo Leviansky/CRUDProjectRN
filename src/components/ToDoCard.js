@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Alert } from 'react-native'; // Import Modal dan Alert
 import styles from '../styles/ToDoCardStyles.js';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { formatDate, formatTime } from '../helpers/TaskManagers.js';
 
 const TodoCard = ({ time, title, description, onDelete }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -18,6 +19,15 @@ const TodoCard = ({ time, title, description, onDelete }) => {
     setModalVisible(false);
     onDelete();
   };
+
+  const isToday = (date) => {
+    const today = new Date();
+    return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+  };
+
+  const daysInIndonesian = [
+    'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
+  ];
   
   return (
     <View style={styles.card}>
@@ -42,7 +52,7 @@ const TodoCard = ({ time, title, description, onDelete }) => {
         </View>
       </Modal>
       <View style={styles.cardContent}>
-        <Text style={styles.time}>{time}</Text>
+        <Text style={styles.time}>{isToday(time) ? 'HARI INI' : `${daysInIndonesian[time.getDay()]}, ${formatDate(time)}`} {formatTime(time)}</Text>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.description}>{description}</Text>
       </View>

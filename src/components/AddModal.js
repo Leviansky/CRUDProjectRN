@@ -1,19 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from 'react-native';
 import styles from '../styles/AddModalStyles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { formatDate, formatTime } from '../helpers/TaskManagers';
 
-const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask }) => {
-  const [jobTitle, setJobTitle] = useState('');
-  const [jobDescription, setJobDescription] = useState('');
+const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask, task, onUpdateTask }) => {
+  const [jobTitle, setJobTitle] = useState(task ? task.title : '');
+  const [jobDescription, setJobDescription] = useState(task ? task.description : '');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
+  useEffect(() => {
+    if (task) {
+      setJobTitle(task.title);
+      setJobDescription(task.description);
+      setSelectedDate(new Date(task.time));
+      setSelectedTime(new Date(task.time));
+    } else {
+      setJobTitle('');
+      setJobDescription('');
+      setSelectedDate(new Date());
+      setSelectedTime(new Date());
+    }
+  }, [task]);
+
+
   const handleDateChange = (event, selected) => {
-    console.log(event);
     if (event.type == "set") {
       setSelectedDate(selected);
       setShowDatePicker(false);
@@ -27,7 +42,6 @@ const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask }) => {
   };
 
   const handleTimeChange = (event, selected) => {
-    console.log(event);
     if (event.type == "set") {
       setSelectedTime(selected);
       setShowTimePicker(false);
@@ -39,9 +53,18 @@ const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask }) => {
     }
   };
 
+  const combineDateAndTime = (date, time) => {
+    const combined = new Date(date);
+    combined.setHours(time.getHours());
+    combined.setMinutes(time.getMinutes());
+    return combined;
+  };
+
+
   const handleSubmit = async () => {
+    timeTemp = combineDateAndTime(selectedDate,selectedTime)
     const newTask = {
-      time: formatDate(selectedDate) + " " + formatTime(selectedTime),
+      time: timeTemp,
       title: jobTitle,
       description: jobDescription,
     };
@@ -58,18 +81,25 @@ const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask }) => {
     }
   };
 
-  const formatTime = date => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  const handleUpdate = async () => {
+    const newTask = {
+      time: combineDateAndTime(selectedDate,selectedTime),
+      title: jobTitle,
+      description: jobDescription,
+    };
+
+    try {
+      await onUpdateTask(newTask);
+      setJobTitle('');
+      setJobDescription('');
+      setSelectedDate(new Date());
+      setSelectedTime(new Date());  
+      onModalClose();
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
   };
 
-  const formatDate = date => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    return `${day.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}  `;
-  };
 
   return (
     <Modal
@@ -97,10 +127,12 @@ const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask }) => {
             onChangeText={text => setJobDescription(text)}
           />
           <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.input}>{formatDate(selectedDate)}{formatTime(selectedTime)}</Text>
+            <Text style={styles.input}>
+              {formatDate(selectedDate)} {formatTime(selectedTime)}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>Submit</Text>
+          <TouchableOpacity onPress={task ? handleUpdate : handleSubmit } style={styles.submitButton}>
+            <Text style={styles.submitButtonText}>{task ? 'Update' : 'Submit'}</Text>
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
