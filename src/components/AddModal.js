@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
 import styles from '../styles/AddModalStyles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { formatDate, formatTime } from '../helpers/TaskManagers';
+import { formatDate, formatTime, combineDateAndTime } from '../helpers/TimeManagers';
+import { formatTask } from '../helpers/TaskManagers';
 
 const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask, task, onUpdateTask }) => {
   const [jobTitle, setJobTitle] = useState(task ? task.title : '');
@@ -36,7 +37,6 @@ const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask, task, o
       return;
     } else {
       setShowDatePicker(false);
-      setShowTimePicker(false);
       return;
     }
   };
@@ -47,58 +47,38 @@ const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask, task, o
       setShowTimePicker(false);
       return;
     } else {
-      setShowDatePicker(false);
       setShowTimePicker(false);
       return;
     }
   };
 
-  const combineDateAndTime = (date, time) => {
-    const combined = new Date(date);
-    combined.setHours(time.getHours());
-    combined.setMinutes(time.getMinutes());
-    return combined;
-  };
-
-
   const handleSubmit = async () => {
-    timeTemp = combineDateAndTime(selectedDate,selectedTime)
-    const newTask = {
-      time: timeTemp,
-      title: jobTitle,
-      description: jobDescription,
-    };
-
+    const newTask = formatTask(selectedDate, selectedTime, jobTitle, jobDescription);
     try {
       await onAddTask(newTask);
-      setJobTitle('');
-      setJobDescription('');
-      setSelectedDate(new Date());
-      setSelectedTime(new Date());  
-      onModalClose();
+      handleClose();
     } catch (error) {
       console.error('Error adding task:', error);
     }
   };
 
   const handleUpdate = async () => {
-    const newTask = {
-      time: combineDateAndTime(selectedDate,selectedTime),
-      title: jobTitle,
-      description: jobDescription,
-    };
-
+    const newTask = formatTask(selectedDate, selectedTime, jobTitle, jobDescription);
     try {
       await onUpdateTask(newTask);
-      setJobTitle('');
-      setJobDescription('');
-      setSelectedDate(new Date());
-      setSelectedTime(new Date());  
-      onModalClose();
+      handleClose();
     } catch (error) {
       console.error('Error adding task:', error);
     }
   };
+
+  const handleClose = () => {
+    setJobTitle('');
+    setJobDescription('');
+    setSelectedDate(new Date());
+    setSelectedTime(new Date());  
+    onModalClose();
+  }
 
 
   return (
@@ -110,7 +90,7 @@ const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask, task, o
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <TouchableOpacity onPress={onModalClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Icon name="times" size={20} color="black" />
           </TouchableOpacity>
           <Text style={styles.modalText}>Tambah Pekerjaan</Text>
@@ -131,26 +111,37 @@ const ModalButton = ({ visible, onRequestClose, onModalClose, onAddTask, task, o
               {formatDate(selectedDate)} {formatTime(selectedTime)}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={task ? handleUpdate : handleSubmit } style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>{task ? 'Update' : 'Submit'}</Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={selectedDate}
-              mode="date" // Set mode to "date"
-              display="spinner" // Display mode
-              onChange={handleDateChange}
-            />
-          )}
-          {showTimePicker && (
-            <DateTimePicker
-              value={selectedTime}
-              mode="time" // Set mode to "time"
-              is24Hour={true}
-              display="spinner" // Display mode
-              onChange={handleTimeChange}
-            />
-          )}
+          {
+            jobTitle != '' && jobDescription != '' ?
+            <TouchableOpacity onPress={task ? handleUpdate : handleSubmit } style={styles.submitButton}>
+              <Text style={styles.submitButtonText}>{task ? 'Update' : 'Submit'}</Text>
+            </TouchableOpacity>
+            :
+            <View style={styles.cantSubmitButton}>
+              <Text style={styles.submitButtonText}>{task ? 'Update' : 'Submit'}</Text>
+            </View>
+          }
+          {
+            showDatePicker && (
+              <DateTimePicker
+                value={selectedDate}
+                mode="date" // Set mode to "date"
+                display="spinner" // Display mode
+                onChange={handleDateChange}
+              />
+            )
+          }
+          {
+            showTimePicker && (
+              <DateTimePicker
+                value={selectedTime}
+                mode="time" // Set mode to "time"
+                is24Hour={true}
+                display="spinner" // Display mode
+                onChange={handleTimeChange}
+              />
+            )
+          }
         </View>
       </View>
     </Modal>

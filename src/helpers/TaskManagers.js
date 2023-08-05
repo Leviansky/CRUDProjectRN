@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { combineDateAndTime } from './TimeManagers';
 
 const loadTasks = async () => {
   try {
@@ -50,19 +51,14 @@ const updateTask = async (index, updatedTask) => {
   }
 };
 
-const formatTime = (date) => {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-};
-
-const formatDate = (date) => {
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
-  return `${day.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}  `;
-};
+const formatTask = (date, time, title, description) => {
+  const task = {
+    time: combineDateAndTime(date, time),
+    title: title,
+    description: description,
+  };
+  return task;
+}
 
 
-
-export { loadTasks, addTask, deleteTask, updateTask, formatDate, formatTime };
+export { loadTasks, addTask, deleteTask, updateTask, formatTask };

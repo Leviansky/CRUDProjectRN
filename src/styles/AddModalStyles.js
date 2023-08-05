@@ -31,13 +31,24 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   submitButton: {
-    backgroundColor: '#007bff', // Adjust the color as needed
+    backgroundColor: '#007bff',
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
     alignItems: 'center',
   },
   submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  cantSubmitButton: {
+    backgroundColor: '#B6D9FF',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  cantSubmitButtonText: {
     color: 'white',
     fontSize: 16,
   },

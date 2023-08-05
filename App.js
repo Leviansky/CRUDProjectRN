@@ -45,7 +45,7 @@ export default function App() {
       const updatedTasks = [...tasks];
       updatedTasks[editingIndex] = updatedTask;
       setTasks(updatedTasks);
-      await updateTask(editingIndex, updatedTask); // Memanggil fungsi updateTask untuk memperbarui data di AsyncStorage
+      await updateTask(editingIndex, updatedTask);
       setEditingTask(null);
       setEditingIndex(null);
       setModalVisible(false);
@@ -67,17 +67,19 @@ export default function App() {
       <StatusBar style="auto" />
       <Header />
       <ScrollView>
-        {tasks.map((task, index) => (
-          <TouchableOpacity onPress={() => openEditModal(index)}>
-            <TodoCard
-              key={index}
-              time={new Date(task.time)}
-              title={task.title}
-              description={task.description}
-              onDelete={ () => handleDeleteTask(index)}
-            />
-          </TouchableOpacity>
-        ))}
+        {
+          tasks.map((task, index) => (
+            <TouchableOpacity key={index} onPress={() => openEditModal(index)}>
+              <TodoCard
+                key={index}
+                time={new Date(task.time)}
+                title={task.title}
+                description={task.description}
+                onDelete={ () => handleDeleteTask(index)}
+              />
+            </TouchableOpacity>
+          ))
+        }
       </ScrollView>
       <AddButton onPress={toggleModal}/>
       <AddModal
